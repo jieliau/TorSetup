@@ -19,8 +19,10 @@ function torRelay ()
         echo "ContactInfo $contactinfo" | tee -a $torConfig
     fi
     systemctl restart tor.service
+    sleep 3
     arm
 }
+
 function torHiddenService ()
 {
 	hiddenResult=$(grep '^HiddenService' /etc/tor/torrc)
@@ -33,7 +35,7 @@ function torHiddenService ()
 	fi
 	systemctl restart tor.service
 	local i=0
-	local timeout=5
+	local timeout=10
 	while [ $i -lt $timeout ];do
 		if [ -e /var/lib/tor/hidden_service/hostname ]; then
 			break
