@@ -30,12 +30,14 @@ function torHiddenService ()
 		local torConfig="/etc/tor/torrc" 
 		read -p "Your real service port: " realport
 		read -p "Your hidden service port: " hiddenport
+		echo "Log notice file /var/log/tor/notices.log" | tee -a $torConfig
+		echo "Log debug file /var/log/tor/debug.log" | tee -a $torConfig
 		echo "HiddenServiceDir /var/lib/tor/hidden_service/" | tee -a $torConfig
 		echo "HiddenServicePort $hiddenport 127.0.0.1:$realport" | tee -a $torConfig
 	fi
 	systemctl restart tor.service
 	local i=0
-	local timeout=10
+	local timeout=30
 	while [ $i -lt $timeout ];do
 		if [ -e /var/lib/tor/hidden_service/hostname ]; then
 			break
@@ -58,13 +60,13 @@ codename=$(lsb_release -a | grep Codename | awk '{print $2}')
 resultSources=$(grep "deb.torproject.org" /etc/apt/sources.list)
 if [ "$resultSources" == "" ]
 then
-	echo "deb http://deb.torproject.org/torproject.org $codename main" >> /etc/apt/sources.list
-	echo "deb-src http://deb.torproject.org/torproject.org $codename main" >> /etc/apt/sources.list
+	echo "deb http://deb.torproject.org/torproject.org $codename main" | tee -a /etc/apt/sources.list
+	echo "deb-src http://deb.torproject.org/torproject.org $codename main" | tee -a /etc/apt/sources.list
 fi
 gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
 gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
 apt-get update
-apt-get install tor deb.torproject.org-keyring tor-arm -y
+apt-get install tor deb.torproject.org-keyring tor-arm -y --allow-unauthenticated
 
 read -p "Please select which service you want 1) Tor Relay 2) Tor Hidden Service:" choice
 if [ $choice == 1 ]
