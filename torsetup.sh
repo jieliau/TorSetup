@@ -37,9 +37,9 @@ function torHiddenService ()
 	fi
 	systemctl restart tor.service
 	local i=0
-	local timeout=30
+	local timeout=60
 	while [ $i -lt $timeout ];do
-		if [ -e /var/lib/tor/hidden_service/hostname ]; then
+		if [ -s /var/lib/tor/hidden_service/hostname ]; then
 			break
 		fi
 		sleep 1
