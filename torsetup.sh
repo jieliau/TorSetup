@@ -1,7 +1,9 @@
 #!/bin/bash
 #
 #This is easy setup script for Tor.
-#Jie Liau@TDoH2017
+#Original from Jie Liau@TDoH2017
+#Fixed version from Jie Liau@2023
+
 
 function torRelay () 
 {
@@ -20,7 +22,7 @@ function torRelay ()
     fi
     systemctl restart tor.service
     sleep 3
-    arm
+    nyx
 }
 
 function torHiddenService ()
@@ -55,18 +57,17 @@ then
     exit 1
 fi
 
-apt-get install lsb-core -y
+apt update
+apt-get install lsb-core apt-transport-https -y
 codename=$(lsb_release -a | grep Codename | awk '{print $2}')
-resultSources=$(grep "deb.torproject.org" /etc/apt/sources.list)
-if [ "$resultSources" == "" ]
-then
-	echo "deb http://deb.torproject.org/torproject.org $codename main" | tee -a /etc/apt/sources.list
-	echo "deb-src http://deb.torproject.org/torproject.org $codename main" | tee -a /etc/apt/sources.list
-fi
-gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
-gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
-apt-get update
-apt-get install tor deb.torproject.org-keyring tor-arm -y --allow-unauthenticated
+
+echo "deb [signed-by=/usr/share/keyrings/tor-archive-keyring.gpg arch=amd64] https://deb.torproject.org/torproject.org $codename main" | tee -a /etc/apt/sources.list.d/tor.list
+echo "deb-src [signed-by=/usr/share/keyrings/tor-archive-keyring.gpg arch=amd64] https://deb.torproject.org/torproject.org $codename main" | tee -a /etc/apt/sources.list.d/tor.list
+
+wget -qO- https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --dearmor | tee /usr/share/keyrings/tor-archive-keyring.gpg >/dev/null
+
+apt update
+apt install tor deb.torproject.org-keyring nyx -y
 
 read -p "Please select which service you want 1) Tor Relay 2) Tor Hidden Service:" choice
 if [ $choice == 1 ]
